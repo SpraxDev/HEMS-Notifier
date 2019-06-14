@@ -160,3 +160,24 @@ sendMails();
 
 setInterval(checkBGInfoPage, 1000 * 60 * 60 * 3);  // Alle 3h
 setInterval(sendMails, 1000 * 60 * 15);            // Alle 15 Minuten: 10 Mails
+
+const server = require('http').createServer(require('./server'));
+server.on('error', (err) => {
+  if (err.syscall !== 'listen') {
+    throw err;
+  }
+
+  switch (err.code) {
+    case 'EACCES':
+      console.error(`Port ${process.env.PORT || 8095} requires elevated privileges`);
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(`Port ${process.env.PORT || 8095} is already in use`);
+      process.exit(1);
+      break;
+    default:
+      throw err;
+  }
+});
+server.listen(process.env.PORT || 8096, process.env.HOST || '127.0.0.1');
