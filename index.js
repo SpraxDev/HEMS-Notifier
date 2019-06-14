@@ -1,21 +1,11 @@
-/* StackOverflow ftw: https://stackoverflow.com/a/4673436/9346616 */
-String.prototype.format = function () {
-  let args = arguments;
-
-  return this.replace(/{(\d+)}/g, function (match, number) {
-    return typeof args[number] != 'undefined' ?
-      args[number] :
-      match;
-  });
-};
-
 const request = require('request'),
   fs = require('fs'),
   mailer = require('nodemailer');
 
 const { JSDOM } = require('jsdom');
 
-const db = require('./db-utils/DB_BG-Info');
+const Utils = require('./utils'),
+  db = require('./db-utils/DB_BG-Info');
 
 const MAIL_TEMPLATE = fs.readFileSync('./mail.html', { encoding: 'UTF-8' });
 
@@ -51,6 +41,7 @@ if (!fs.existsSync('./storage/mail.json')) {
 }
 
 const mailTransporter = mailer.createTransport(require('./storage/mail.json'));
+module.exports.mailTransporter = mailTransporter;
 
 let knownArticles = require('./storage/storage.json').KnownArticles || [];
 let mailQueue = require('./storage/storage.json').MailQueue || [];
@@ -121,11 +112,14 @@ function checkBGInfoPage() {
               return console.error(err);
             };
 
+            let queuedMails = 0;
             for (const mail of mails) {
               mailQueue.push({ to: mail.mail, html: mailHTML.format(undefined, undefined, undefined, mail.mail, mail.token) });
+              queuedMails++;
             }
 
             saveStorageFile();
+            console.log('Queued %s mail(s)', queuedMails);
           });
         }
       });
@@ -142,23 +136,13 @@ function sendMails() {
     if (!mailData) break;
 
     sentMail = true;
-    async function send() {
-      let info = await mailTransporter.sendMail({
-        from: '"BG-Info-Notifier" <no-reply@sprax2013.de>',
-        to: mailData.to,
 
-        subject: 'Neuer Artikel auf bg.hems.de',
-        // text: 'TODO: Textversion der Mail anhängen',
-        html: mailData.html
+    // TODO: Textversion der Mail anhängen
+    Utils.sendMail(mailTransporter, mailData.to, `Neue(r) Artikel auf bg.hems.de`, null, mailData.html)
+      .catch((err) => {
+        mailQueue.push(mailData);
+        console.error(err);
       });
-
-      console.log('Sent mail:', info.messageId);
-    }
-
-    send().catch((err) => {
-      mailQueue.push(mailData);
-      console.error(err);
-    });
   }
 
   if (sentMail) saveStorageFile();
@@ -175,4 +159,4 @@ checkBGInfoPage();
 sendMails();
 
 setInterval(checkBGInfoPage, 1000 * 60 * 60 * 3);  // Alle 3h
-setInterval(sendMails, 1000 * 60 * 10);  // Alle 10 Minuten: 10 Mails
+setInterval(sendMails, 1000 * 60 * 15);            // Alle 15 Minuten: 10 Mails
