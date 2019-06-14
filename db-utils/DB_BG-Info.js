@@ -8,7 +8,7 @@ module.exports = {
     mysql.pool.getConnection((err, con) => {
       if (err) return callback(err);
 
-      con.query('SELECT `Mail`,`PublicToken` FROM `Mails` WHERE `Verified` = 1 AND `Failures` < 5;', [], (err, rows, _fields) => {
+      con.query('SELECT `Mail`,`PublicToken` FROM `Mails` WHERE `Unsubscribed` = 0 AND `Verified` = 1 AND `Failures` < 5;', [], (err, rows, _fields) => {
         con.release();
 
         if (err) return callback(err);
@@ -24,6 +24,76 @@ module.exports = {
         }
 
         return callback(null, mails);
+      });
+    });
+  },
+
+  /**
+   * @param {String} mail
+   * @param {Function} callback Params: err, mail
+   */
+  getMail(mail, callback) {
+    mysql.pool.getConnection((err, con) => {
+      if (err) return callback(err);
+
+      con.query('SELECT * FROM `Mails` WHERE `Mail`=?;', [mail], (err, rows, _fields) => {
+        con.release();
+
+        if (err) return callback(err);
+
+        return callback(null, rows.length > 0 ? JSON.parse(JSON.stringify(rows[0])) : null);
+      });
+    });
+  },
+
+  /**
+   * @param {String} publicToken
+   * @param {Function} callback Params: err, mail
+   */
+  getMailForPublicToken(publicToken, callback) {
+    mysql.pool.getConnection((err, con) => {
+      if (err) return callback(err);
+
+      con.query('SELECT * FROM `Mails` WHERE `PublicToken`=?;', [publicToken], (err, rows, _fields) => {
+        con.release();
+
+        if (err) return callback(err);
+
+        return callback(null, rows.length > 0 ? JSON.parse(JSON.stringify(rows[0])) : null);
+      });
+    });
+  },
+
+  /**
+   * @param {Function} callback Params: err
+   */
+  setVerifiedAndResetPublicToken(id, verified, callback) {
+    mysql.pool.getConnection((err, con) => {
+      if (err) return callback(err);
+
+      con.query('UPDATE `Mails` SET `Verified`=?,`PublicToken`=NULL WHERE `ID`=?;', [verified ? 1 : 0, id], (err, _rows, _fields) => {
+        con.release();
+
+        if (err) return callback(err);
+
+        return callback(null);
+      });
+    });
+  },
+
+  /**
+   * @param {Function} callback Params: err
+   */
+  setUnsubscribedAndResetPublicToken(id, unsubscribed, callback) {
+    mysql.pool.getConnection((err, con) => {
+      if (err) return callback(err);
+
+      con.query('UPDATE `Mails` SET `Unsubscribed`=?,`PublicToken`=NULL WHERE `ID`=?;', [unsubscribed ? 1 : 0, id], (err, _rows, _fields) => {
+        con.release();
+
+        if (err) return callback(err);
+
+        return callback(null);
       });
     });
   },
@@ -47,28 +117,24 @@ module.exports = {
   },
 
   /**
-   * @param {String} uploadedBy 
-   * @param {String} fileName
-   * @param {String} mimeType 
-   * @param {String} md5 
-   * @param {Function} callback Params: err, publicID
+   * @param {String} mail 
+   * @param {Function} callback Params: err, mail
    */
-  addFile(uploadedBy, fileName, mimeType, md5, callback) {
+  addMail(mail, callback) {
     mysql.pool.getConnection((err, con) => {
       if (err) return callback(err);
 
-      con.query('INSERT INTO `Files` VALUES (NULL,NULL,?,?,?,?,CURRENT_TIMESTAMP);', [uploadedBy, fileName, mimeType, md5], (err, rows, _fields) => {
+      con.query('INSERT INTO `Mails` (`Mail`) VALUES (?);', [mail], (err, _rows, _fields) => {
         if (err) {
           con.release();
           return callback(err);
         }
 
-        con.query('SELECT `PublicID` FROM `Files` WHERE `UploadedBy`=? AND `FileHash`=? ORDER BY `Uploaded` DESC LIMIT 1;', [uploadedBy, md5], (err, rows, _fields) => {
+        con.query('SELECT * FROM `Mails` WHERE `Mail`=?;', [mail], (err, rows, _fields) => {
           con.release();
-
           if (err) return callback(err);
 
-          return callback(null, rows[0]['PublicID']);
+          return callback(null, JSON.parse(JSON.stringify(rows[0])));
         });
       });
     });
