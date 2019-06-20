@@ -169,11 +169,11 @@ server.on('error', (err) => {
 
   switch (err.code) {
     case 'EACCES':
-      console.error(`Port ${process.env.PORT || 8095} requires elevated privileges`);
+      console.error(`Port ${process.env.PORT || 8096} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(`Port ${process.env.PORT || 8095} is already in use`);
+      console.error(`Port ${process.env.PORT || 8096} is already in use`);
       process.exit(1);
       break;
     default:
