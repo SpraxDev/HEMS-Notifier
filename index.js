@@ -181,3 +181,10 @@ server.on('error', (err) => {
   }
 });
 server.listen(process.env.PORT || 8096, process.env.HOST || '127.0.0.1');
+
+// TODO: Disconnect from db etc.
+// process.on('SIGINT', function () {
+//   db.stop(function (err) {
+//     process.exit(err ? 1 : 0);
+//   });
+// });
