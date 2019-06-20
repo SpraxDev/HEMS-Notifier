@@ -4,7 +4,7 @@ const db = require('./../db-utils/DB_BG-Info');
 let regex = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
 const mailTransporter = require('./../index').mailTransporter;
-const MAIL_VERIFY = 'Bitte bestätigen Sie ihre E-Mail auf https://BG-Info.Sprax2013.de/subscribe?token={0}\r\n\r\nSollten Sie sich nicht auf BG-Info.Sprax2013.de angemeldet haben, so müssen Sie nichts weiter tun.\r\n\r\n\r\nBei Komplikationen können Sie mich gerne kontaktieren: developer@sprax2013.de';
+const MAIL_VERIFY = 'Bitte bestätigen Sie Ihre E-Mail auf https://BG-Info.Sprax2013.de/subscribe?token={0}\r\n\r\nSollten Sie sich nicht auf BG-Info.Sprax2013.de angemeldet haben, so müssen Sie nichts weiter tun.\r\n\r\n\r\nBei Komplikationen können Sie mich gerne kontaktieren: developer@sprax2013.de';
 
 module.exports = (req, res, next) => {
   let email = req.query.email,
@@ -56,7 +56,7 @@ module.exports = (req, res, next) => {
               });
             });
           } else {
-            res.json({ success: false, reason: 'Already subscribed' });
+            res.json({ success: false, msg: 'Already subscribed' });
           }
         });
       } else {
