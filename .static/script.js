@@ -33,7 +33,7 @@ function onSubmit(e) {
 
         if (json['success']) {
           elem.classList.add('alert-success');
-          elem.innerHTML = '<b>Erfolg</b><br>Du wirst in Kürze eine Mail erhalten, um deine Mailadresse zu bestätigen';
+          elem.innerHTML = '<b>Erfolg</b><br>Du wirst in Kürze eine Mail erhalten, um deine Mailadresse zu bestätigen<br>Bitte prüfe auch den <b>Spam-Ordner</b>';
         } else {
           elem.classList.add('alert-danger');
           elem.innerHTML = '<b>Fehlschlag</b><br>' + toFriendlyErr(json['msg']);
