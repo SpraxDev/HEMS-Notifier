@@ -29,7 +29,18 @@ module.exports = (req, res, next) => {
 
               Utils.sendMail(mailTransporter, mail['Mail'], 'Bitte bestätigen Sie ihre E-Mail', MAIL_VERIFY.format(mail['PublicToken']))
                 .then(() => {
-                  res.json({ success: true });
+                  function htmlCallback() {
+                    res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> befindet sich bereits in der Datenbank!<h1>`);
+                  }
+
+                  res.format({
+                    json: () => {
+                      res.json({ success: false, msg: 'Already subscribed' });
+                    },
+
+                    html: htmlCallback,
+                    default: htmlCallback
+                  });
                 })
                 .catch((err) => {
                   return next(Utils.logAndCreateError(err));
@@ -47,7 +58,18 @@ module.exports = (req, res, next) => {
 
                   Utils.sendMail(mailTransporter, mail['Mail'], 'Bitte bestätigen Sie ihre E-Mail', MAIL_VERIFY.format(mail['PublicToken']))
                     .then(() => {
-                      res.json({ success: true });
+                      function htmlCallback() {
+                        res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> befindet sich bereits in der Datenbank!<h1>`);
+                      }
+
+                      res.format({
+                        json: () => {
+                          res.json({ success: false, msg: 'Already subscribed' });
+                        },
+
+                        html: htmlCallback,
+                        default: htmlCallback
+                      });
                     })
                     .catch((err) => {
                       return next(Utils.logAndCreateError(err));
@@ -56,7 +78,18 @@ module.exports = (req, res, next) => {
               });
             });
           } else {
-            res.json({ success: false, msg: 'Already subscribed' });
+            function htmlCallback() {
+              res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> befindet sich bereits in der Datenbank!<h1>`);
+            }
+
+            res.format({
+              json: () => {
+                res.json({ success: false, msg: 'Already subscribed' });
+              },
+
+              html: htmlCallback,
+              default: htmlCallback
+            });
           }
         });
       } else {
@@ -65,7 +98,18 @@ module.exports = (req, res, next) => {
 
           Utils.sendMail(mailTransporter, mail['Mail'], 'Bitte bestätigen Sie ihre E-Mail', MAIL_VERIFY.format(mail['PublicToken']))
             .then(() => {
-              res.json({ success: true });
+              function htmlCallback() {
+                res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> wurde der Datenbank hinzugefügt <small>In Kürze erhalten Sie eine Mail, um ${mail['Mail']} zu bestätigen</small><h1>`);
+              }
+
+              res.format({
+                json: () => {
+                  res.json({ success: true });
+                },
+
+                html: htmlCallback,
+                default: htmlCallback
+              });
             })
             .catch((err) => {
               return next(Utils.logAndCreateError(err));
@@ -81,7 +125,18 @@ module.exports = (req, res, next) => {
         db.setVerifiedAndResetPublicToken(mail['ID'], true, (err) => {
           if (err) return next(Utils.logAndCreateError(err));
 
-          res.json({ success: true });
+          function htmlCallback() {
+            res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> wurde erfolgreich bestätigt<h1>`);
+          }
+
+          res.format({
+            json: () => {
+              res.json({ success: true });
+            },
+
+            html: htmlCallback,
+            default: htmlCallback
+          });
         });
       } else {
         next(Utils.createError(400, 'Invalid Token'));

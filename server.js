@@ -27,13 +27,6 @@ app.get('/unsubscribe', require('./routes/unsubscribe'));
 // app.get('/sitemap.txt', require('./routes/sitemap').TXT);
 // app.get('/stats', require('./routes/stats'));
 
-/* Frontend */
-// app.get('/', require('./routes/index'));
-// app.get('/index.html', require('./routes/index'));
-
-// app.get('/legal', require('./routes/legal'));
-// app.get('/privacy', require('./routes/privacy'));
-
 
 // Prepare 404
 app.use((_req, _res, next) => {
@@ -41,7 +34,7 @@ app.use((_req, _res, next) => {
 });
 
 // Send Error
-app.use((err, req, res, _next) => {
+app.use((err, _req, res, _next) => {
   if (!err || !(err instanceof Error)) {
     err = Utils.createError();
   }
@@ -53,9 +46,20 @@ app.use((err, req, res, _next) => {
   if (!res.headersSent) {
     res.status(err.status || 500);
 
-    res.json({
-      code: err.status || 500,
-      msg: err.message
+    function htmlCallback() {
+      res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${err.status || 500} ${err.message}</title></head><body><h1>${err.status || 500}</h1><p>${err.message}</p></body></html>`);
+    }
+
+    res.format({
+      json: () => {
+        res.json({
+          code: err.status || 500,
+          msg: err.message
+        });
+      },
+
+      html: htmlCallback,
+      default: htmlCallback
     });
   }
 });

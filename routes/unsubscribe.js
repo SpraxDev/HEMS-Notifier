@@ -15,7 +15,18 @@ module.exports = (req, res, next) => {
       db.setUnsubscribedAndResetPublicToken(mail['ID'], true, (err) => {
         if (err) return next(Utils.logAndCreateError(err));
 
-        res.json({ success: true });
+        function htmlCallback() {
+          res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> wird keine weiteren Mails erhalten. <small>Es kann bis zu 48 Stunden dauern, bis die Mailadresse aus der Datenbank gelöscht wurde</small><h1>`);
+        }
+
+        res.format({
+          json: () => {
+            res.json({ success: true });
+          },
+
+          html: htmlCallback,
+          default: htmlCallback
+        });
       });
     } else {
       next(Utils.createError(400, 'Invalid Token'));
