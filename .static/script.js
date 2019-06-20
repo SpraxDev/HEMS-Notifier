@@ -17,7 +17,11 @@ function onSubmit(e) {
   e.preventDefault();
 
   if (document.getElementById('chkbox').checked) {
-    fetch('./subscribe?email=' + encodeURIComponent(document.getElementById('email').value))
+    fetch('./subscribe?email=' + encodeURIComponent(document.getElementById('email').value), {
+      headers: {
+        Accept: 'application/json'
+      }
+    })
       .then((res) => {
         return res.json();
       })
