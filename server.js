@@ -23,6 +23,7 @@ app.use((_req, res, next) => {
 /* Backend */
 app.get('/subscribe', require('./routes/subscribe'));
 app.get('/unsubscribe', require('./routes/unsubscribe'));
+app.get('/status', require('./routes/status'));
 // app.get('/sitemap.xml', require('./routes/sitemap').XML);
 // app.get('/sitemap.txt', require('./routes/sitemap').TXT);
 // app.get('/stats', require('./routes/stats'));
