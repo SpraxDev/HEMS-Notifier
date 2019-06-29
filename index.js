@@ -51,7 +51,7 @@ function checkBGInfoPage() {
     method: 'GET',
     header: {
       Accept: 'text/html',
-      'User-Agent': `BG-Info-Notifiert/${require('./package.json')['version']} (${process.platform || 'Unknown OS'}) (+https://bg-info.sprax2013.de/bot)`,
+      'User-Agent': `Mozilla/5.0+(compatible; BG-Info-Notifiert/${require('./package.json')['version']}; https://bg-info.sprax2013.de/bot) (${process.platform || 'Unknown OS'})`,
       'Upgrade-Insecure-Requests': 1
     }
   }, (err, res, body) => {
