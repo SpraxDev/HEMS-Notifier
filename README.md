@@ -1,1 +1,1 @@
-# BG-Info-Notifier
+# BG-Info-Notifier [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/Sprax2013/BG-Info-Notifier.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Sprax2013/BG-Info-Notifier/context:javascript) [![Total alerts](https://img.shields.io/lgtm/alerts/g/Sprax2013/BG-Info-Notifier.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Sprax2013/BG-Info-Notifier/alerts/)
