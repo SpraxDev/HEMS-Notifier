@@ -59,12 +59,12 @@ module.exports = (req, res, next) => {
                   Utils.sendMail(mailTransporter, mail['Mail'], 'Bitte bestätigen Sie Ihre E-Mail', MAIL_VERIFY.format(mail['PublicToken']))
                     .then(() => {
                       function htmlCallback() {
-                        res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> befindet sich bereits in der Datenbank!<h1>`);
+                        res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> wurde der Datenbank hinzugefügt <small>In Kürze erhalten Sie eine Mail, um ${mail['Mail']} zu bestätige - Bitte auch den <b>Spam-Ordner</b> prüfen</small><h1>`);
                       }
 
                       res.format({
                         json: () => {
-                          res.json({ success: false, msg: 'Already subscribed' });
+                          res.json({ success: true });
                         },
 
                         html: htmlCallback,
