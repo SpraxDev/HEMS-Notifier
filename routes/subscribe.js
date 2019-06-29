@@ -46,7 +46,7 @@ module.exports = (req, res, next) => {
                   return next(Utils.logAndCreateError(err));
                 });
             });
-          } else if (mail['Unsubscribed']) {
+          } else if (mail['Unsubscribed'] || (Date.now() - new Date(mail['LastUpdate']).getTime()) > 1000 * 60 * 60) {
             db.setUnsubscribedAndResetPublicToken(mail['ID'], false, (err) => {
               if (err) return next(Utils.logAndCreateError(err));
 
