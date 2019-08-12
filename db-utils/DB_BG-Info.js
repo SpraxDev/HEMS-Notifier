@@ -14,8 +14,6 @@ pool.on('error', (err, _client) => {
 });
 // call `pool.end()` to shutdown the pool (waiting for queries to finish)
 
-// const mysql = require('./MySQL');
-
 module.exports = {
   /**
    * @param {Function} callback Params: err, mails
