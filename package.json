@@ -17,7 +17,7 @@
     "nodemon": "^1.19.1",
     "pg": "^7.12.1",
     "request": "^2.88.0",
-    "rotating-file-stream": "^1.4.1",
+    "rotating-file-stream": "^1.4.3",
     "uuid": "^3.3.2"
   },
   "nodemonConfig": {
