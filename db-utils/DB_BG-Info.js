@@ -1,30 +1,38 @@
-const mysql = require('./MySQL');
+const generatePublicToken = require('uuid/v4'),
+  { Pool } = require('pg');
+const pool = new Pool({
+  host: require('./../storage/db.json')['host'],
+  user: require('./../storage/db.json')['user'],
+  password: require('./../storage/db.json')['password'],
+  database: require('./../storage/db.json')['database'],
+  max: 4,
+  ssl: true
+});
+pool.on('error', (err, _client) => {
+  console.error('Unexpected error on idle client:', err);
+  // process.exit(-1);
+});
+// call `pool.end()` to shutdown the pool (waiting for queries to finish)
+
+// const mysql = require('./MySQL');
 
 module.exports = {
   /**
    * @param {Function} callback Params: err, mails
    */
   getValidMails(callback) {
-    mysql.pool.getConnection((err, con) => {
+    pool.query(`SELECT "Mail","PublicToken" FROM "Mails" WHERE "Unsubscribed" =FALSE AND "Verified" =TRUE AND "Failures" <5;`, [], (err, res) => {
       if (err) return callback(err);
 
-      con.query('SELECT `Mail`,`PublicToken` FROM `Mails` WHERE `Unsubscribed` = 0 AND `Verified` = 1 AND `Failures` < 5;', [], (err, rows, _fields) => {
-        con.release();
+      let mails = [];
 
-        if (err) return callback(err);
-
-        let mails = [];
-
-        for (const row in rows) {
-          if (rows.hasOwnProperty(row)) {
-            let elem = rows[row];
-
-            mails.push({ mail: elem['Mail'], token: elem['PublicToken'] });
-          }
+      for (const key in res.rows) {
+        if (res.rows.hasOwnProperty(key)) {
+          mails.push(res.rows[key]);
         }
+      }
 
-        return callback(null, mails);
-      });
+      return callback(null, mails);
     });
   },
 
@@ -33,16 +41,10 @@ module.exports = {
    * @param {Function} callback Params: err, mail
    */
   getMail(mail, callback) {
-    mysql.pool.getConnection((err, con) => {
+    pool.query(`SELECT * FROM "Mails" WHERE "Mail"=$1;`, [mail], (err, res) => {
       if (err) return callback(err);
 
-      con.query('SELECT * FROM `Mails` WHERE `Mail`=?;', [mail], (err, rows, _fields) => {
-        con.release();
-
-        if (err) return callback(err);
-
-        return callback(null, rows.length > 0 ? JSON.parse(JSON.stringify(rows[0])) : null);
-      });
+      return callback(null, res.rowCount > 0 ? res.rows[0] : null);
     });
   },
 
@@ -51,16 +53,10 @@ module.exports = {
    * @param {Function} callback Params: err, mail
    */
   getMailForPublicToken(publicToken, callback) {
-    mysql.pool.getConnection((err, con) => {
+    pool.query(`SELECT * FROM "Mails" WHERE "PublicToken" =$1;`, [publicToken], (err, res) => {
       if (err) return callback(err);
 
-      con.query('SELECT * FROM `Mails` WHERE `PublicToken`=?;', [publicToken], (err, rows, _fields) => {
-        con.release();
-
-        if (err) return callback(err);
-
-        return callback(null, rows.length > 0 ? JSON.parse(JSON.stringify(rows[0])) : null);
-      });
+      return callback(null, res.rowCount > 0 ? res.rows[0] : null);
     });
   },
 
@@ -68,16 +64,10 @@ module.exports = {
    * @param {Function} callback Params: err
    */
   setVerifiedAndResetPublicToken(id, verified, callback) {
-    mysql.pool.getConnection((err, con) => {
+    pool.query(`UPDATE "Mails" SET "Verified"=$1,"PublicToken"=$3 WHERE "ID"=$2;`, [verified, id, generatePublicToken().replace(/-/g, '')], (err, _res) => {
       if (err) return callback(err);
 
-      con.query('UPDATE `Mails` SET `Verified`=?,`PublicToken`=NULL WHERE `ID`=?;', [verified ? 1 : 0, id], (err, _rows, _fields) => {
-        con.release();
-
-        if (err) return callback(err);
-
-        return callback(null);
-      });
+      return callback(null);
     });
   },
 
@@ -85,16 +75,10 @@ module.exports = {
    * @param {Function} callback Params: err
    */
   setUnsubscribedAndResetPublicToken(id, unsubscribed, callback) {
-    mysql.pool.getConnection((err, con) => {
+    pool.query(`UPDATE "Mails" SET "Unsubscribed" =$1,"PublicToken" =$3 WHERE "ID" =$2;`, [unsubscribed, id, generatePublicToken().replace(/-/g, '')], (err, _res) => {
       if (err) return callback(err);
 
-      con.query('UPDATE `Mails` SET `Unsubscribed`=?,`PublicToken`=NULL WHERE `ID`=?;', [unsubscribed ? 1 : 0, id], (err, _rows, _fields) => {
-        con.release();
-
-        if (err) return callback(err);
-
-        return callback(null);
-      });
+      return callback(null);
     });
   },
 
@@ -103,16 +87,10 @@ module.exports = {
    * @param {Function} callback Params: err, isInDB | isInDB is false if not found
    */
   isMailInDB(mail, callback) {
-    mysql.pool.getConnection((err, con) => {
+    pool.query(`SELECT EXISTS(SELECT from "Mails" WHERE "Mail"=$1) AS "exists";`, [mail], (err, res) => {
       if (err) return callback(err);
 
-      con.query('SELECT `ID` FROM `Mails` WHERE `Mail`=?;', [mail], (err, rows, _fields) => {
-        con.release();
-
-        if (err) return callback(err);
-
-        return callback(null, rows.length > 0);
-      });
+      callback(null, res.rows[0]['exists']);
     });
   },
 
@@ -121,86 +99,10 @@ module.exports = {
    * @param {Function} callback Params: err, mail
    */
   addMail(mail, callback) {
-    mysql.pool.getConnection((err, con) => {
+    pool.query(`INSERT INTO "Mails"("Mail", "PublicToken") VALUES ($1,$2) RETURNING *;`, [mail, generatePublicToken().replace(/-/g, '')], (err, res) => {
       if (err) return callback(err);
 
-      con.query('INSERT INTO `Mails` (`Mail`) VALUES (?);', [mail], (err, _rows, _fields) => {
-        if (err) {
-          con.release();
-          return callback(err);
-        }
-
-        con.query('SELECT * FROM `Mails` WHERE `Mail`=?;', [mail], (err, rows, _fields) => {
-          con.release();
-          if (err) return callback(err);
-
-          return callback(null, JSON.parse(JSON.stringify(rows[0])));
-        });
-      });
-    });
-  },
-
-  /**
-   * @param {Function} callback Params: err, json
-   */
-  getStats(callback) {
-    mysql.pool.getConnection((err, con) => {
-      if (err) return callback(err);
-
-      con.query('SHOW INDEX FROM `Games`;', [], (err, rows, _fields) => {
-        if (err) {
-          con.release();
-          return callback(err);
-        }
-
-        let estGameCount = rows[0]['Cardinality'],
-          estUserCount, userCountWithUploads, estFileUploads, descriptionChars;
-
-        con.query('SHOW INDEX FROM `User`;', [], (err, rows, _fields) => {
-          if (err) {
-            con.release();
-            return callback(err);
-          }
-
-          estUserCount = rows[0]['Cardinality'];
-
-          con.query('SHOW INDEX FROM `Files`;', [], (err, rows, _fields) => {
-            if (err) {
-              con.release()
-              return callback(err);
-            }
-
-            estFileUploads = rows[0]['Cardinality'];
-
-            con.query('SELECT SUM(CHAR_LENGTH(`Description`)) AS "CharCount" FROM `Games`;', [], (err, rows, _fields) => {
-              if (err) {
-                con.release()
-                return callback(err);
-              }
-
-              descriptionChars = rows[0]['CharCount'];
-
-              con.query('SELECT COUNT(DISTINCT `Author`) AS "Count" FROM `Games`;', [], (err, rows, _fields) => {
-                con.release();
-
-                if (err) return callback(err);
-
-                userCountWithUploads = rows[0]['Count'];
-
-                callback(null, {
-                  estGameCount: estGameCount,
-                  estUserCount: estUserCount,
-                  userCountWithUploads: userCountWithUploads,
-                  estFileUploads: estFileUploads,
-                  descriptionChars: descriptionChars,
-
-                  lastUpdate: Date.now()
-                });
-              });
-            });
-          });
-        });
-      });
+      callback(null, res.rows[0]);
     });
   }
 };

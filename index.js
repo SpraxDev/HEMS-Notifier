@@ -114,7 +114,7 @@ function checkBGInfoPage() {
 
             let queuedMails = 0;
             for (const mail of mails) {
-              mailQueue.push({ to: mail.mail, html: mailHTML.format(undefined, undefined, undefined, mail.mail, mail.token) });
+              mailQueue.push({ to: mail['Mail'], html: mailHTML.format(undefined, undefined, undefined, mail['Mail'], mail['PublicToken']) });
               queuedMails++;
             }
 
@@ -142,6 +142,8 @@ function sendMails() {
       .catch((err) => {
         mailQueue.push(mailData);
         console.error(err);
+
+        saveStorageFile();
       });
   }
 
