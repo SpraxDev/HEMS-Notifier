@@ -4,11 +4,6 @@ const request = require('request'),
 
 const { JSDOM } = require('jsdom');
 
-const Utils = require('./utils'),
-  db = require('./db-utils/DB_BG-Info');
-
-const MAIL_TEMPLATE = fs.readFileSync('./mail.html', { encoding: 'UTF-8' });
-
 if (!fs.existsSync('./storage')) fs.mkdirSync('./storage');
 if (!fs.existsSync('./storage/storage.json')) fs.writeFileSync('./storage/storage.json', '{"KnownArticles":[],"mailQueue":{}}');
 if (!fs.existsSync('./storage/db.json')) {
@@ -39,6 +34,18 @@ if (!fs.existsSync('./storage/mail.json')) {
 
   console.log('./storage/mail.json has been created!');
 }
+if (!fs.existsSync('./storage/hooks.json')) {
+  fs.writeFileSync('./storage/hooks.json', JSON.stringify([], null, 4));
+
+  console.log('./storage/hooks.json has been created!');
+}
+
+const Utils = require('./utils'),
+  db = require('./db-utils/DB_BG-Info');
+
+const hooks = require('./storage/hooks.json');
+
+const MAIL_TEMPLATE = fs.readFileSync('./mail.html', { encoding: 'UTF-8' });
 
 const mailTransporter = mailer.createTransport(require('./storage/mail.json'));
 module.exports.mailTransporter = mailTransporter;
@@ -73,7 +80,7 @@ function checkBGInfoPage() {
         let newArticles = [];
 
         for (const elem of doc.getElementById('content').getElementsByClassName('main').item(0).getElementsByTagName('div')) {
-          if (elem.id && elem.id.startsWith('c')) {
+          if (elem.innerHTML.length > 0 && elem.id && elem.id.startsWith('c') && elem.classList.contains('csc-default')) {
             if (!knownArticles.includes(elem.id)) {
               newArticles.push(elem);
             }
@@ -85,6 +92,27 @@ function checkBGInfoPage() {
 
           let articles = '';
           for (const elem of newArticles) {
+            // Post Title, Image, Content
+            let imgElems = elem.getElementsByTagName('img'),
+              h2Elems = elem.getElementsByTagName('h2');
+
+            const postTitle = h2Elems.length > 0 ? h2Elems.item(0).textContent : 'Ohne Titel',
+              postImg = imgElems.length > 0 ? imgElems.item(0).src : '';
+            let postContent = '';
+            for (const contentElem of elem.getElementsByClassName('bodytext')) {
+              if (postContent != '') {
+                postContent += '\n';
+              }
+
+              postContent += contentElem.textContent;
+            }
+
+            const postWords = postContent.split(' ');
+            if (postWords.length > 50) {
+              postContent = postWords.slice(0, 50).join(' ') + ' [...]';
+            }
+
+            // Cleanup HTML and prepare mail
             for (const child of elem.getElementsByTagName('*')) {
               child.removeAttribute('class');
               child.removeAttribute('style');
@@ -99,6 +127,49 @@ function checkBGInfoPage() {
             articles += '<article>' + elem.innerHTML + '</article>' + '<hr>';
 
             knownArticles.push(elem.id);
+
+            // Discord WebHook
+            const options = {
+              method: 'POST',
+              body: JSON.stringify({
+                username: 'BG-Info (Aktuell)',
+                avatar_url: 'https://bg-info.sprax2013.de/img/HEMS.jpg',
+
+                content: 'Auf der Startseite von http://bg.hems.de wurde ein neuer Artikel veröffentlicht',
+                embeds: [
+                  {
+                    author: {
+                      name: 'BG-Info-Notifier',
+                      url: 'https://bg-info.sprax2013.de/',
+                      icon_url: 'https://sprax2013.de/images/Logo_HD.png'
+                    },
+                    image: {
+                      url: postImg
+                    },
+
+                    url: 'http://bg.hems.de',
+                    color: 16738378,
+
+                    title: postTitle,
+                    description: postContent
+                  }
+                ]
+              }),
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'User-Agent': `Mozilla/5.0+(compatible; BG-Info-Notifiert/${require('./package.json')['version']}; https://bg-info.sprax2013.de/bot) (${process.platform || 'Unknown OS'})`,
+                'Upgrade-Insecure-Requests': 1
+              }
+            };
+
+            for (const hookURL of hooks) {
+              request(hookURL, options, (err, res, _body) => {
+                if (err) return console.error(err);
+
+                if (!res.statusCode.toString().startsWith('20')) return console.log('Error contacting WebHook (%s)', res.statusCode);
+              });
+            }
           }
 
           articles = articles.substring(0, articles.length - 4);
