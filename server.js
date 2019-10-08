@@ -17,6 +17,15 @@ const accessLogStream = require('rotating-file-stream')('access.log', {
     compress: true
   });
 
+accessLogStream.on('error', (err) => {
+  console.error(err); // Don't crash whole application, just print
+  // once this event is emitted, the stream will be closed as well
+});
+errorLogStream.on('error', (err) => {
+  console.error(err); // Don't crash whole application, just print
+  // once this event is emitted, the stream will be closed as well
+});
+
 const app = express();
 
 app.disable('x-powered-by');
