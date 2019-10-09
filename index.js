@@ -181,7 +181,7 @@ function checkBGInfoPage() {
             if (err) {
               saveStorageFile();
               return console.error(err);
-            };
+            }
 
             let queuedMails = 0;
             for (const mail of mails) {

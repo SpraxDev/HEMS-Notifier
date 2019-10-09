@@ -78,7 +78,7 @@ module.exports = (req, res, next) => {
               });
             });
           } else {
-            function htmlCallback() {
+            const htmlCallback = function () {
               res.send(`<h1>Die Mailadresse <i>${mail['Mail']}</i> befindet sich bereits in der Datenbank!<h1>`);
             }
 

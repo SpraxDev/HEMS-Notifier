@@ -73,7 +73,7 @@ app.use((err, _req, res, _next) => {
   if (!res.headersSent) {
     res.status(err.status || 500);
 
-    function htmlCallback() {
+    const htmlCallback = function () {
       res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${err.status || 500} ${err.message}</title></head><body><h1>${err.status || 500}</h1><p>${err.message}</p></body></html>`);
     }
 
