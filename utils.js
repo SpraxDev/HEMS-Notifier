@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 
-const URL_PATTERN = new RegExp('^(?!mailto:)(?:(?:http|https|ftp)://)(?:\\S+(?::\\S*)?@)?(?:(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[0-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))|localhost)(?::\\d{2,5})?(?:(/|\\?|#)[^\\s]*)?$', 'i'),
-  UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /* StackOverflow ftw: https://stackoverflow.com/a/4673436/9346616 */
 String.prototype.format = function () {
@@ -101,15 +100,6 @@ module.exports = {
    */
   isOAuthCode(str) {
     return typeof str === 'string' && /^[a-z0-9]+$/i.test(str.toLowerCase());
-  },
-
-  /**
-   * @param {String} str 
-   * 
-   * @returns {Boolean}
-   */
-  isURL(str) {
-    return str.length < 2083 && URL_PATTERN.test(str);
   },
 
   /**
