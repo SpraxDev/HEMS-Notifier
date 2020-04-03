@@ -81,7 +81,7 @@ module.exports = {
   },
 
   /**
-   * @param {String} mail 
+   * @param {String} mail
    * @param {Function} callback Params: err, isInDB | isInDB is false if not found
    */
   isMailInDB(mail, callback) {
@@ -93,7 +93,7 @@ module.exports = {
   },
 
   /**
-   * @param {String} mail 
+   * @param {String} mail
    * @param {Function} callback Params: err, mail
    */
   addMail(mail, callback) {
