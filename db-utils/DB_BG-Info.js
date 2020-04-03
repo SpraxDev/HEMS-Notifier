@@ -1,4 +1,4 @@
-const generatePublicToken = require('uuid/v4'),
+const generatePublicToken = require('uuid').v4,
   { Pool } = require('pg');
 const pool = new Pool({
   host: require('./../storage/db.json')['host'],
