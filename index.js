@@ -24,7 +24,9 @@ if (!fs.existsSync('./storage/mail.json')) {
   fs.writeFileSync('./storage/mail.json', JSON.stringify(
     {
       host: '127.0.0.1',
-      port: 587,
+	  port: 465,
+	  secure: true,
+	  requireTLS: true,
       auth: {
         user: 'bg-info@sprax2013.de',
         pass: 's3cr3t!'
