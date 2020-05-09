@@ -5,3 +5,8 @@
 * Recode in TypeScript
 * Store last mail so new subscribers get sent the last mail too (Maybe append that this is a mail sent on DATE_X)
 * log **all** sent emails locally (for 7 days)
+* Rewrite in TypeScript
+* Setup CI
+* Add Admin-ControlPanel
+* Create plugin for Typo3 to use instead of Notifier or to contact the Notifier to get data more accurate
+* Provide config to configure mails per minute etc.
