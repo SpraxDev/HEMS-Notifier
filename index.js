@@ -75,7 +75,7 @@ function checkBGInfoPage() {
 
         let doc = new JSDOM(body, {
           url: res.request.uri.href,
-          referrer: 'https://Sprax2013.de/',
+          referrer: 'https://bg-info.sprax2013.de/',
           contentType: 'text/html'
         }).window.document;
 
