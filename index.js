@@ -214,7 +214,7 @@ function sendMails() {
     Utils.sendMail(mailTransporter, mailData.to, `Neue(r) Artikel auf bg.hems.de`, null, mailData.html)
       .catch((err) => {
         mailQueue.push(mailData);
-        console.error(err);
+	console.error('Could not send Mail:', err);
 
         saveStorageFile();
       });
