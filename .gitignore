@@ -1,6 +1,4 @@
-# Dependency directories
-node_modules/
-
-# Custom
-storage/
-logs/
+/build/
+/logs/
+/node_modules/
+/storage/
