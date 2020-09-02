@@ -3,6 +3,9 @@
 ## ToDo
 * A page like https://support.google.com/webmasters/answer/182072 but on https://bg-info.sprax2013.de/bot
 * Recode in TypeScript
+* Support adding Discord WebHooks
+* Add Telegram bots
+* Add sending mails
 * Store last mail so new subscribers get sent the last mail too (Maybe append that this is a mail sent on DATE_X)
 * log **all** sent emails locally (for 7 days)
 * Rewrite in TypeScript
