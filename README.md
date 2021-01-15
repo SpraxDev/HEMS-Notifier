@@ -2,14 +2,12 @@
 
 ## ToDo
 * A page like https://support.google.com/webmasters/answer/182072 but on https://bg-info.sprax2013.de/bot
-* Recode in TypeScript
-* Support adding Discord WebHooks
+* Task-Queue die jede Minute geprüft wird und due-dates enthält. Task aus der Vergangenheit werden normal nachträglich ausgeführt. So soll Rate-Limiting und network problems "umgangen" behandelt werden
+* Defekte WebHooks müssen als deaktiviert markiert werden (defekt nur wenn Discord selber sagt ist deleted oder so)
 * Add Telegram bots
 * Add sending mails
-* Store last mail so new subscribers get sent the last mail too (Maybe append that this is a mail sent on DATE_X)
 * log **all** sent emails locally (for 7 days)
-* Rewrite in TypeScript
-* Setup CI
+* [X] Setup CI
 * Add Admin-ControlPanel
 * Create plugin for Typo3 to use instead of Notifier or to contact the Notifier to get data more accurate
 * Provide config to configure mails per minute etc.

@@ -22,7 +22,8 @@ httpReq.get(HEMS_URL)
         if (!elem.id) continue;
 
         if (!storage.knownArticles.includes(elem.id)) {
-          let content = elem.querySelector('.csc-textpic-text')?.innerHTML || null;
+          let content = elem.querySelector('.csc-textpic-text')?.innerHTML || null,
+            contentPreview = null;
 
           // We use innerHTML because innerText is not implemented in jsdom.
           // This way, we can force line breaks (too agressively but who's noticing that).
@@ -32,10 +33,32 @@ httpReq.get(HEMS_URL)
               .replace(/[\r\n]+/g, '\n');
           }
 
+          const indextFirstSentenceDone = (content ?? '').indexOf('.')
+          if (content != null && indextFirstSentenceDone != -1) {
+            if (indextFirstSentenceDone < 200) {
+              contentPreview = content.substring(0, indextFirstSentenceDone + 1);
+
+              if (indextFirstSentenceDone < content.length) {
+                contentPreview += ' [...]';
+              }
+            } else {
+              contentPreview = content?.substring(0, 150);
+
+              const i = contentPreview?.lastIndexOf('0');
+
+              if (i != -1) {
+                contentPreview?.substring(0, i);
+              }
+
+              contentPreview += ' [...]';
+            }
+          }
+
           newArticles.push({
             id: elem.id,
             title: elem.querySelector('h1,h2,h3,h4,h5,h6')?.textContent || null,
             content,
+            contentPreview,
             image: elem.querySelector('img[src]')?.getAttribute('src') || null
           });
 
@@ -67,7 +90,7 @@ async function sendDiscordWebhook(url: string, article: Article): Promise<void> 
         username: 'BG-Info Notifier',
         avatar_url: 'https://bg-info.sprax2013.de/img/HEMS.jpg',
         content: 'Auf https://bg.hems.de wurde ein neuer Artikel veröffentlicht',
-        allowed_mentions: {
+        allowed_mentions: { // Disable all mentions
           parse: []
         },
         embeds: [
@@ -89,7 +112,7 @@ async function sendDiscordWebhook(url: string, article: Article): Promise<void> 
             color: 16738378,
 
             title: article.title ?? '*Ohne Titel*',
-            description: article.content ?? ''
+            description: article.contentPreview ?? ''
           }
         ]
       })
