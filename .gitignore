@@ -1,6 +1,7 @@
-# Dependency directories
-node_modules/
+/dist/
 
-# Custom
-storage/
-logs/
+# Node.js
+/node_modules/
+
+# JetBrains IDE
+/.idea/
