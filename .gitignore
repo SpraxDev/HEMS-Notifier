@@ -1,4 +1,5 @@
 /dist/
+/storage/
 
 # Node.js
 /node_modules/
